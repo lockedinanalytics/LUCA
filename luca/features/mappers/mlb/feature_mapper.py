@@ -8,7 +8,12 @@ class MlbFeatureMapper:
     Converts raw MLB provider data into LUCA's module-ready feature structure.
     """
 
-    def build_modules(self, game: Any) -> dict[str, Any]:
+   def build_modules(
+    self,
+    game: Any,
+    markets: Any | None = None,
+    **kwargs: Any,
+) -> dict[str, Any]:
         mapped = self.map_game(game)
 
         return {
@@ -50,7 +55,7 @@ class MlbFeatureMapper:
             "offense": getattr(game, "offense", {}),
             "defense": getattr(game, "defense", {}),
             "environment": getattr(game, "environment", {}),
-            "market": getattr(game, "market", {}),
+            "market": mapped.get("market") or markets or {},
             "context": getattr(game, "context", {}),
         }
 
