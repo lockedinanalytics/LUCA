@@ -2,12 +2,13 @@ from __future__ import annotations
 
 from typing import List
 
+from luca.config.settings import get_settings
 from luca.core.models import MarketLine, Sport, TeamGame
+from luca.providers.aliases.resolver import TeamAliasResolver
 from luca.providers.base import MarketProvider
 from luca.providers.odds.models import OddsProviderStatus
 from luca.providers.odds.the_odds_api.client import TheOddsApiClient
 from luca.providers.odds.the_odds_api.mapper import odds_event_to_market_lines
-from luca.config.settings import get_settings
 from luca.security.secrets import mask_secret
 
 
@@ -25,6 +26,7 @@ SPORT_KEY_MAP = {
 class TheOddsApiMarketProvider(MarketProvider):
     def __init__(self):
         self.settings = get_settings()
+        self.resolver = TeamAliasResolver()
 
     def status(self) -> OddsProviderStatus:
         return OddsProviderStatus(
@@ -49,17 +51,19 @@ class TheOddsApiMarketProvider(MarketProvider):
         client = TheOddsApiClient()
         events = client.get_odds(sport_key=sport_key)
 
-        # Basic matching by exact team names. Phase 3 should add alias resolution.
         output: list[MarketLine] = []
         for game in games:
-            event = next(
-                (
-                    e for e in events
-                    if {e.get("home_team"), e.get("away_team")} == {game.home_team, game.away_team}
-                ),
-                None,
-            )
+            event = self._match_event(game, events)
             if event:
                 output.extend(odds_event_to_market_lines(event, game=game))
-
         return output
+
+    def _match_event(self, game: TeamGame, events: list[dict]) -> dict | None:
+        for event in events:
+            event_home = event.get("home_team", "")
+            event_away = event.get("away_team", "")
+            home_match = self.resolver.same_team(event_home, game.home_team, game.sport.value, game.league)
+            away_match = self.resolver.same_team(event_away, game.away_team, game.sport.value, game.league)
+            if home_match and away_match:
+                return event
+        return None
