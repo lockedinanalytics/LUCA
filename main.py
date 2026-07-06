@@ -81,6 +81,28 @@ async def run_luca(
     schedule_provider: str | None = None,
     market_provider: str | None = None,
 ):
+    try:
+        result = run_luca_for_sport(
+            sport,
+            league or sport.value.upper(),
+            date,
+            get_schedule_provider(schedule_provider),
+            get_market_provider(market_provider),
+        )
+        return run_summary(result) if public else result
+
+    except Exception as exc:
+        return {
+            "status": "error",
+            "route": "/run-luca/{sport}",
+            "sport": sport.value,
+            "date": date,
+            "league": league or sport.value.upper(),
+            "schedule_provider": schedule_provider,
+            "market_provider": market_provider,
+            "error_type": type(exc).__name__,
+            "error": str(exc),
+        }
     result = run_luca_for_sport(
         sport,
         league or sport.value.upper(),
