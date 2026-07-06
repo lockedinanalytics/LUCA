@@ -18,6 +18,8 @@ from luca.intelligence.mlb.pitching.engine import calculate_starting_pitcher_int
 from luca.intelligence.mlb.pitching.models import StartingPitcherIntelligenceInput
 from luca.intelligence.mlb.rcp import RunCreationInput, calculate_rcp
 from luca.intelligence.market.smi import MarketMovementInput, calculate_smi
+from luca.intelligence.market.v2.engine import calculate_smi_v2
+from luca.intelligence.market.v2.models import SmartMoneyV2Input
 
 
 class MlbFeatureMapper(FeatureMapper):
@@ -75,18 +77,21 @@ class MlbFeatureMapper(FeatureMapper):
             )).rcp_score
 
         first_market = markets[0] if markets else None
-        smi = calculate_smi(MarketMovementInput(
-            opening_odds=first_market.open_odds if first_market else None,
-            current_odds=first_market.current_odds if first_market else None,
-            public_percent=context.get("public_percent"),
-            sharp_percent=context.get("sharp_percent"),
-        ))
+        if context.get("market_v2"):
+            smi_score = calculate_smi_v2(SmartMoneyV2Input(**context["market_v2"])).final_smi_score
+        else:
+            smi_score = calculate_smi(MarketMovementInput(
+                opening_odds=first_market.open_odds if first_market else None,
+                current_odds=first_market.current_odds if first_market else None,
+                public_percent=context.get("public_percent"),
+                sharp_percent=context.get("sharp_percent"),
+            )).smi_score
 
         return {
             "sp": sp_score,
             "bsi": bsi_score,
             "rcp": rcp_score,
-            "smi": smi.smi_score,
+            "smi": smi_score,
             "cam": cam_score,
             "wrm": max(0, min(100, 50 + (wrm_value - 1.0) * 100)),
             "umpire": umpire_score,
