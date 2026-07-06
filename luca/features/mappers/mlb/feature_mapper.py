@@ -2,10 +2,17 @@ from __future__ import annotations
 
 from typing import Any
 
+from luca.intelligence.mlb.bsi import BullpenUsageInput, calculate_bsi
+from luca.intelligence.mlb.rcp import RunCreationInput, calculate_rcp
+from luca.intelligence.mlb.starting_pitcher import (
+    StartingPitcherInput,
+    calculate_starting_pitcher_score,
+)
+
 
 class MlbFeatureMapper:
     """
-    Converts raw MLB provider data into LUCA's normalized feature structure.
+    Builds MLB module scores matching SPORT_WEIGHTS["mlb"].
     """
 
     def build_modules(
@@ -14,68 +21,28 @@ class MlbFeatureMapper:
         markets: Any | None = None,
         **kwargs: Any,
     ) -> dict[str, float]:
-        mapped = self.map_game(game)
+        sp = calculate_starting_pitcher_score(StartingPitcherInput())
+        bsi = calculate_bsi(BullpenUsageInput())
+        rcp = calculate_rcp(RunCreationInput())
+
+        market_score = self._market_score(markets)
 
         return {
-            "pitching": self._score(mapped.get("pitching"), default=50.0),
-            "bullpen": self._score(mapped.get("bullpen"), default=50.0),
-            "offense": self._score(mapped.get("offense"), default=50.0),
-            "defense": self._score(mapped.get("defense"), default=50.0),
-            "environment": self._score(mapped.get("environment"), default=50.0),
-            "market": self._score(mapped.get("market") or markets, default=50.0),
-            "context": self._score(mapped.get("context"), default=50.0),
+            "sp": sp.final_sp_score,
+            "bsi": bsi.final_bsi,
+            "rcp": rcp.rcp_score,
+            "smi": market_score,
+            "cam": 50.0,
+            "wrm": 50.0,
+            "umpire": 50.0,
+            "market_edge": market_score,
         }
-
-    def _score(self, value: Any, default: float = 50.0) -> float:
-        if value is None:
-            return default
-
-        if isinstance(value, (int, float)):
-            return float(value)
-
-        if isinstance(value, dict):
-            for key in ("score", "value", "rating", "confidence"):
-                if key in value and isinstance(value[key], (int, float)):
-                    return float(value[key])
-            return default
-
-        if isinstance(value, list):
-            return default
-
-        if hasattr(value, "score"):
-            score = getattr(value, "score")
-            if isinstance(score, (int, float)):
-                return float(score)
-
-        return default
 
     def build_many(self, games: list[Any]) -> list[dict[str, float]]:
         return [self.build_modules(game) for game in games]
 
-    def map_game(self, game: Any) -> dict[str, Any]:
-        if isinstance(game, dict):
-            return game
+    def _market_score(self, markets: Any | None) -> float:
+        if not markets:
+            return 50.0
 
-        if hasattr(game, "model_dump"):
-            return game.model_dump()
-
-        if hasattr(game, "dict"):
-            return game.dict()
-
-        return {
-            "game_id": getattr(game, "game_id", None),
-            "id": getattr(game, "id", None),
-            "home_team": getattr(game, "home_team", None),
-            "away_team": getattr(game, "away_team", None),
-            "start_time": getattr(game, "start_time", None),
-            "pitching": getattr(game, "pitching", {}),
-            "bullpen": getattr(game, "bullpen", {}),
-            "offense": getattr(game, "offense", {}),
-            "defense": getattr(game, "defense", {}),
-            "environment": getattr(game, "environment", {}),
-            "market": getattr(game, "market", {}),
-            "context": getattr(game, "context", {}),
-        }
-
-    def map_games(self, games: list[Any]) -> list[dict[str, Any]]:
-        return [self.map_game(game) for game in games]
+        return 50.0
