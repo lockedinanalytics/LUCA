@@ -1,23 +1,20 @@
-# LUCA Build Status v5
+# LUCA Build Status v6
 
 ## Added
-- Simulation engine and models
-- Feature engineering context mapper
-- SQLite ledger repository
-- Initial SQL migration
-- Weather provider interface
-- MLB Stats API provider placeholder
-- Market provider namespace
-- Data completeness validator
-- `/simulate/sample`
-- Optional SQLite ledger mode in workflow/calibration
+- Results grading shell
+- Provider freshness model
+- Unit authority module
+- Audit report builder
+- API router separation
+- `/freshness/sample`
+- `/results/grade`
+- Audit mode on `/run-luca/{sport}`
 
 ## Status
-LUCA now has a production workflow shell with a database-ready ledger and simulation service.
+LUCA now has a cleaner API layer, basic grading, provider freshness checks, and unit authority as a standalone module.
 
 ## Next
-- Wire MLB Stats API schedule provider.
-- Add real odds/weather provider adapters.
-- Add sport-specific feature mappers.
-- Add simulation output into sport evaluations.
-- Add results grading endpoint.
+- Add real provider adapters.
+- Connect simulation outputs directly into sport evaluations.
+- Add result persistence updates after grading.
+- Add full market-specific grading for spread, total, props, and contests.

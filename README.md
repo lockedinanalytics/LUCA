@@ -42,3 +42,13 @@ uvicorn main:app --reload
 - Provider namespaces
 - Data completeness validation
 - `/simulate/sample`
+
+
+## v6 additions
+- Results grading shell
+- Provider freshness checks
+- Unit authority module
+- Audit report builder
+- API router separation
+- `/results/grade`
+- `/freshness/sample`
