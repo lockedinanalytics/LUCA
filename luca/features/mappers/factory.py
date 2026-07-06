@@ -3,7 +3,7 @@ from __future__ import annotations
 from luca.core.models import Sport
 from luca.features.mappers.base import FeatureMapper
 from luca.features.mappers.default import DefaultFeatureMapper
-from luca.features.mappers.mlb import MlbFeatureMapper
+from luca.features.mappers.mlb.mapper import MlbFeatureMapper
 from luca.features.mappers.nfl.mapper import NflFeatureMapper
 from luca.features.mappers.ncaaf.mapper import NcaafFeatureMapper
 from luca.features.mappers.soccer.mapper import SoccerFeatureMapper
