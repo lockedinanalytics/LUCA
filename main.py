@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Query
 from luca.api.provider_routes import router as provider_router
+from luca.api.intelligence_routes import router as intelligence_router
 
 from luca.calibration.engine import build_calibration_summary
 from luca.config.settings import get_settings
