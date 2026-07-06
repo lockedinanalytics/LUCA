@@ -3,6 +3,7 @@ from luca.api.provider_routes import router as provider_router
 from luca.api.intelligence_routes import router as intelligence_router
 from luca.api.simulation_routes import router as simulation_router
 from luca.api.mlb_intelligence_routes import router as mlb_intelligence_router
+from luca.api.decision_routes import router as decision_router
 
 from luca.calibration.engine import build_calibration_summary
 from luca.config.settings import get_settings
