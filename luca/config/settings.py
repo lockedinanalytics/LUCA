@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     app_name: str = "LUCA Universal Decision Operating System"
-    model_version: str = "1.0.0-epic2c"
+    model_version: str = "1.0.0-epic2d"
     environment: str = "development"
 
     # Storage

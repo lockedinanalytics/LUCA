@@ -10,6 +10,8 @@ from luca.intelligence.nfl.trench.matchup import calculate_trench_matchup
 from luca.intelligence.nfl.trench.models import TrenchMatchupInput
 from luca.intelligence.nfl.skill_coverage.matchup import calculate_skill_coverage_matchup
 from luca.intelligence.nfl.skill_coverage.models import SkillCoverageMatchupInput
+from luca.intelligence.nfl.context.engine import calculate_nfl_context
+from luca.intelligence.nfl.context.models import NflContextInput
 
 
 class NflFeatureMapper(FeatureMapper):
@@ -54,19 +56,36 @@ class NflFeatureMapper(FeatureMapper):
             skill_explosive = explosive_score
             red_zone_skill = context.get("red_zone_skill", 55.0)
 
+
+        if context.get("context_v2"):
+            nfl_context = calculate_nfl_context(NflContextInput(**context["context_v2"]))
+            context_score = nfl_context.final_context_score
+            coaching_score = nfl_context.coaching_score
+            special_teams_score = nfl_context.special_teams_score
+            weather_environment_score = nfl_context.environment_score
+            rest_travel_score = nfl_context.situational_score
+        else:
+            context_score = context.get("context_edge", 55.0)
+            coaching_score = context.get("coaching_edge", 55.0)
+            special_teams_score = context.get("special_teams_edge", 50.0)
+            weather_environment_score = context.get("weather_environment", 50.0)
+            rest_travel_score = context.get("rest_travel", 55.0)
+
         return {
             "qb_edge": qb_score,
             "ol_dl_edge": trench_score,
             "explosive_play_edge": (skill_explosive * 0.50 + explosive_score * 0.30 + run_edge * 0.20),
             "defensive_efficiency_edge": context.get("defensive_efficiency_edge", 55.0),
             "injury_edge": context.get("injury_edge", 55.0),
-            "coaching_edge": context.get("coaching_edge", 55.0),
-            "weather_environment": context.get("weather_environment", 50.0),
-            "rest_travel": context.get("rest_travel", 55.0),
+            "coaching_edge": coaching_score,
+            "weather_environment": weather_environment_score,
+            "rest_travel": rest_travel_score,
             "market_edge": 55.0 if markets else 45.0,
             "qb_volatility": variance_penalty,
             "pass_protection_edge": pressure_score,
             "run_game_edge": run_edge,
             "skill_coverage_edge": skill_score,
             "red_zone_skill": red_zone_skill,
+            "special_teams_edge": special_teams_score,
+            "context_edge": context_score,
         }
