@@ -15,6 +15,7 @@ from luca.api.nfl_quarterback_routes import router as nfl_quarterback_router
 from luca.api.nfl_trench_routes import router as nfl_trench_router
 from luca.api.nfl_skill_coverage_routes import router as nfl_skill_coverage_router
 from luca.api.nfl_context_routes import router as nfl_context_router
+from luca.api.nfl_decision_routes import router as nfl_decision_router
 
 from luca.calibration.engine import build_calibration_summary
 from luca.config.settings import get_settings
