@@ -32,3 +32,13 @@ uvicorn main:app --reload
 - Shadow mode shell
 - Structured logging
 - Optional ledger write in workflow route
+
+
+## v5 additions
+- Simulation service
+- SQLite ledger repository
+- SQL migration
+- Feature engineering mapper
+- Provider namespaces
+- Data completeness validation
+- `/simulate/sample`

@@ -1,24 +1,23 @@
-# LUCA Build Status v4
+# LUCA Build Status v5
 
 ## Added
-- Configuration system shell
-- Workflow pipeline
-- Database abstraction
-- JSON repository implementation
-- Diagnostics health model
-- Replay framework shell
-- Shadow mode framework shell
-- Structured logger
-- `/workflow/run/{sport}`
-- `/diagnostics/health`
+- Simulation engine and models
+- Feature engineering context mapper
+- SQLite ledger repository
+- Initial SQL migration
+- Weather provider interface
+- MLB Stats API provider placeholder
+- Market provider namespace
+- Data completeness validator
+- `/simulate/sample`
+- Optional SQLite ledger mode in workflow/calibration
 
 ## Status
-LUCA now has a production workflow shell:
-collect -> score -> govern -> optional ledger -> publish.
+LUCA now has a production workflow shell with a database-ready ledger and simulation service.
 
 ## Next
-- Add live provider implementations.
-- Add database migrations.
+- Wire MLB Stats API schedule provider.
+- Add real odds/weather provider adapters.
 - Add sport-specific feature mappers.
-- Add simulation service.
-- Add provider freshness checks.
+- Add simulation output into sport evaluations.
+- Add results grading endpoint.
