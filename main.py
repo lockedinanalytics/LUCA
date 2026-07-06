@@ -5,6 +5,7 @@ from luca.api.simulation_routes import router as simulation_router
 from luca.api.mlb_intelligence_routes import router as mlb_intelligence_router
 from luca.api.decision_routes import router as decision_router
 from luca.api.mlb_pitching_routes import router as mlb_pitching_router
+from luca.api.mlb_bullpen_routes import router as mlb_bullpen_router
 
 from luca.calibration.engine import build_calibration_summary
 from luca.config.settings import get_settings
