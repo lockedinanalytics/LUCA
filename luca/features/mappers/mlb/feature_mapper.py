@@ -5,15 +5,15 @@ from typing import Any
 
 class MlbFeatureMapper:
     """
-    Converts raw MLB provider data into LUCA's module-ready feature structure.
+    Converts raw MLB provider data into LUCA's normalized feature structure.
     """
 
-   def build_modules(
-    self,
-    game: Any,
-    markets: Any | None = None,
-    **kwargs: Any,
-) -> dict[str, Any]:
+    def build_modules(
+        self,
+        game: Any,
+        markets: Any | None = None,
+        **kwargs: Any,
+    ) -> dict[str, Any]:
         mapped = self.map_game(game)
 
         return {
@@ -21,13 +21,12 @@ class MlbFeatureMapper:
             "home_team": mapped.get("home_team"),
             "away_team": mapped.get("away_team"),
             "start_time": mapped.get("start_time"),
-
             "pitching": mapped.get("pitching", {}),
             "bullpen": mapped.get("bullpen", {}),
             "offense": mapped.get("offense", {}),
             "defense": mapped.get("defense", {}),
             "environment": mapped.get("environment", {}),
-            "market": mapped.get("market", {}),
+            "market": mapped.get("market") or markets or {},
             "context": mapped.get("context", {}),
         }
 
@@ -55,7 +54,7 @@ class MlbFeatureMapper:
             "offense": getattr(game, "offense", {}),
             "defense": getattr(game, "defense", {}),
             "environment": getattr(game, "environment", {}),
-            "market": mapped.get("market") or markets or {},
+            "market": getattr(game, "market", {}),
             "context": getattr(game, "context", {}),
         }
 
