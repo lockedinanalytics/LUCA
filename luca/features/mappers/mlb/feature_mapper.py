@@ -9,46 +9,47 @@ class MlbFeatureMapper:
     """
 
     def build_modules(
-    self,
-    game: Any,
-    markets: Any | None = None,
-    **kwargs: Any,
-) -> dict[str, float]:
-    mapped = self.map_game(game)
+        self,
+        game: Any,
+        markets: Any | None = None,
+        **kwargs: Any,
+    ) -> dict[str, float]:
+        mapped = self.map_game(game)
 
-    return {
-        "pitching": self._score(mapped.get("pitching"), default=50.0),
-        "bullpen": self._score(mapped.get("bullpen"), default=50.0),
-        "offense": self._score(mapped.get("offense"), default=50.0),
-        "defense": self._score(mapped.get("defense"), default=50.0),
-        "environment": self._score(mapped.get("environment"), default=50.0),
-        "market": self._score(mapped.get("market") or markets, default=50.0),
-        "context": self._score(mapped.get("context"), default=50.0),
-    }
+        return {
+            "pitching": self._score(mapped.get("pitching"), default=50.0),
+            "bullpen": self._score(mapped.get("bullpen"), default=50.0),
+            "offense": self._score(mapped.get("offense"), default=50.0),
+            "defense": self._score(mapped.get("defense"), default=50.0),
+            "environment": self._score(mapped.get("environment"), default=50.0),
+            "market": self._score(mapped.get("market") or markets, default=50.0),
+            "context": self._score(mapped.get("context"), default=50.0),
+        }
 
-def _score(self, value: Any, default: float = 50.0) -> float:
-    if value is None:
+    def _score(self, value: Any, default: float = 50.0) -> float:
+        if value is None:
+            return default
+
+        if isinstance(value, (int, float)):
+            return float(value)
+
+        if isinstance(value, dict):
+            for key in ("score", "value", "rating", "confidence"):
+                if key in value and isinstance(value[key], (int, float)):
+                    return float(value[key])
+            return default
+
+        if isinstance(value, list):
+            return default
+
+        if hasattr(value, "score"):
+            score = getattr(value, "score")
+            if isinstance(score, (int, float)):
+                return float(score)
+
         return default
 
-    if isinstance(value, (int, float)):
-        return float(value)
-
-    if isinstance(value, dict):
-        for key in ("score", "value", "rating", "confidence"):
-            if key in value and isinstance(value[key], (int, float)):
-                return float(value[key])
-        return default
-
-    if isinstance(value, list):
-        return default
-
-    if hasattr(value, "score"):
-        score = getattr(value, "score")
-        if isinstance(score, (int, float)):
-            return float(score)
-
-    return default
-    def build_many(self, games: list[Any]) -> list[dict[str, Any]]:
+    def build_many(self, games: list[Any]) -> list[dict[str, float]]:
         return [self.build_modules(game) for game in games]
 
     def map_game(self, game: Any) -> dict[str, Any]:
