@@ -1,19 +1,24 @@
-# LUCA Build Status v3
+# LUCA Build Status v4
 
 ## Added
-- Provider adapter interfaces
-- Static schedule/market providers for smoke tests
-- Universal run orchestrator
-- /run-luca/{sport} endpoint
-- Formula-ready sport engines that return evaluations/pass lists
-- Circa Survivor scoring engine
-- /survivor/sample endpoint
+- Configuration system shell
+- Workflow pipeline
+- Database abstraction
+- JSON repository implementation
+- Diagnostics health model
+- Replay framework shell
+- Shadow mode framework shell
+- Structured logger
+- `/workflow/run/{sport}`
+- `/diagnostics/health`
 
 ## Status
-This version can run a LUCA sample for every supported sport without external data providers.
+LUCA now has a production workflow shell:
+collect -> score -> govern -> optional ledger -> publish.
 
 ## Next
-- Replace static providers with real providers.
-- Add database ledger persistence.
-- Add MLB/NFL provider mapping.
-- Add route-level ledger write support.
+- Add live provider implementations.
+- Add database migrations.
+- Add sport-specific feature mappers.
+- Add simulation service.
+- Add provider freshness checks.

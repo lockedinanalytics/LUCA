@@ -23,3 +23,12 @@ uvicorn main:app --reload
 - Static providers
 - /run-luca/{sport}
 - Circa Survivor scoring
+
+## v4 additions
+- Workflow pipeline
+- Database abstraction
+- Diagnostics health endpoint
+- Replay shell
+- Shadow mode shell
+- Structured logging
+- Optional ledger write in workflow route
