@@ -17,6 +17,7 @@ from luca.api.nfl_skill_coverage_routes import router as nfl_skill_coverage_rout
 from luca.api.nfl_context_routes import router as nfl_context_router
 from luca.api.nfl_decision_routes import router as nfl_decision_router
 from luca.api.nfl_validation_routes import router as nfl_validation_router
+from luca.api.ncaaf_foundation_routes import router as ncaaf_foundation_router
 
 from luca.calibration.engine import build_calibration_summary
 from luca.config.settings import get_settings
