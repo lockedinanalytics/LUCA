@@ -1,16 +1,14 @@
 from __future__ import annotations
 from luca.core.models import GovernanceStatus, PickCategory
 
-def apply_governance(confidence: float, expected_value: float | None, risk_grade: str = "medium",
-                     data_completeness: float = 1.0, model_conflict: bool = False) -> GovernanceStatus:
-    if data_completeness < 0.70: return GovernanceStatus.HOLD
-    if model_conflict: return GovernanceStatus.HOLD
+def apply_governance(confidence: float, expected_value: float|None, risk_grade: str="medium", data_completeness: float=1.0, model_conflict: bool=False) -> GovernanceStatus:
+    if data_completeness < .70 or model_conflict: return GovernanceStatus.HOLD
     if expected_value is None or expected_value <= 0: return GovernanceStatus.PASS
-    if risk_grade.lower() in {"extreme", "avoid"}: return GovernanceStatus.AVOID
+    if risk_grade.lower() in {"extreme","avoid"}: return GovernanceStatus.AVOID
     if confidence < 70: return GovernanceStatus.PASS
     return GovernanceStatus.APPROVED
 
-def assign_category(luca_score: float, is_total: bool = False, is_prop: bool = False) -> PickCategory:
+def assign_category(luca_score: float, is_total: bool=False, is_prop: bool=False) -> PickCategory:
     if is_prop: return PickCategory.PROP
     if is_total: return PickCategory.BEST_TOTAL if luca_score >= 80 else PickCategory.SECONDARY_TOTAL
     if luca_score >= 90: return PickCategory.PRESIDENTIAL
@@ -18,8 +16,3 @@ def assign_category(luca_score: float, is_total: bool = False, is_prop: bool = F
     if luca_score >= 80: return PickCategory.CABINET
     if luca_score >= 75: return PickCategory.LEAN
     return PickCategory.PASS
-
-def recommended_units(luca_score: float, risk_grade: str = "medium") -> float:
-    cap = 0.75 if risk_grade.lower() in {"high", "extreme"} else 3.0
-    units = 3.0 if luca_score >= 92 else 2.0 if luca_score >= 88 else 1.0 if luca_score >= 84 else 0.5 if luca_score >= 80 else 0.0
-    return min(units, cap)

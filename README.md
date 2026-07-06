@@ -1,63 +1,54 @@
-# LUCA Universal Decision Operating System — Repo Conversion v2
+# LUCA Production Repository — Phase 1
 
-This version upgrades the LUCA scaffold from interface-only to formula-ready.
+This is the first consolidated LUCA production repository.
 
-## Added in v2
-- Universal feature registry
-- Universal analytics engine formulas
-- Objective engine thresholds
+## Phase 1 scope
+
+Built as one deployable platform backbone:
+
+- FastAPI application
+- Universal core models
+- Settings/configuration
+- Provider interfaces
+- Static dev providers
+- Sport engine plugin registry
+- Universal scoring and objective helpers
 - Governance gates
-- Sport formula configuration
-- Publication formatter
-- Expanded FastAPI routes
-- Basic tests
+- Unit authority
+- Risk model
+- Simulation service
+- Workflow pipeline
+- JSON + SQLite ledger repositories
+- Results grading
+- Calibration summary
+- Replay shell
+- Shadow mode shell
+- Diagnostics and health API
+- Publication/card formatter
+- Test suite
+- Railway/Docker/GitHub Action scaffolding
 
 ## Run locally
+
 ```bash
 pip install -r requirements.txt
 uvicorn main:app --reload
 ```
 
-## v3 additions
-- Run orchestrator
-- Static providers
-- /run-luca/{sport}
-- Circa Survivor scoring
+## Smoke test
 
-## v4 additions
-- Workflow pipeline
-- Database abstraction
-- Diagnostics health endpoint
-- Replay shell
-- Shadow mode shell
-- Structured logging
-- Optional ledger write in workflow route
+```bash
+pytest
+curl "http://127.0.0.1:8000/health"
+curl "http://127.0.0.1:8000/run-luca/nfl?date=2026-08-01&public=true"
+```
 
+## Deploy target
 
-## v5 additions
-- Simulation service
-- SQLite ledger repository
-- SQL migration
-- Feature engineering mapper
-- Provider namespaces
-- Data completeness validation
-- `/simulate/sample`
+Railway can run:
 
+```bash
+uvicorn main:app --host 0.0.0.0 --port $PORT
+```
 
-## v6 additions
-- Results grading shell
-- Provider freshness checks
-- Unit authority module
-- Audit report builder
-- API router separation
-- `/results/grade`
-- `/freshness/sample`
-
-
-## v7 additions
-- Market evaluator
-- Public JSON card model
-- Team scoring projection helpers
-- Market-specific grading shell
-- Odds and injury provider namespaces
-- `/card/{sport}`
+Phase 2 should add live provider integrations and sport-specific feature mappers.

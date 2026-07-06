@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from luca.core.models import Sport
 from luca.core.engine import SportEngine
 from luca.sports.mlb.engine import MlbEngine
@@ -12,17 +10,5 @@ from luca.sports.golf.engine import GolfEngine
 from luca.sports.tennis.engine import TennisEngine
 from luca.sports.mma.engine import MmaEngine
 
-
 def get_sport_engine(sport: Sport) -> SportEngine:
-    engines = {
-        Sport.MLB: MlbEngine(),
-        Sport.NFL: NflEngine(),
-        Sport.NCAAF: NcaafEngine(),
-        Sport.NBA: NbaEngine(),
-        Sport.NHL: NhlEngine(),
-        Sport.SOCCER: SoccerEngine(),
-        Sport.GOLF: GolfEngine(),
-        Sport.TENNIS: TennisEngine(),
-        Sport.MMA: MmaEngine(),
-    }
-    return engines[sport]
+    return {Sport.MLB:MlbEngine(),Sport.NFL:NflEngine(),Sport.NCAAF:NcaafEngine(),Sport.NBA:NbaEngine(),Sport.NHL:NhlEngine(),Sport.SOCCER:SoccerEngine(),Sport.GOLF:GolfEngine(),Sport.TENNIS:TennisEngine(),Sport.MMA:MmaEngine()}[sport]
