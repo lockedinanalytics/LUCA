@@ -8,6 +8,8 @@ from luca.intelligence.nfl.quarterback.engine import calculate_nfl_quarterback_i
 from luca.intelligence.nfl.quarterback.models import NflQuarterbackIntelligenceInput
 from luca.intelligence.nfl.trench.matchup import calculate_trench_matchup
 from luca.intelligence.nfl.trench.models import TrenchMatchupInput
+from luca.intelligence.nfl.skill_coverage.matchup import calculate_skill_coverage_matchup
+from luca.intelligence.nfl.skill_coverage.models import SkillCoverageMatchupInput
 
 
 class NflFeatureMapper(FeatureMapper):
@@ -38,10 +40,24 @@ class NflFeatureMapper(FeatureMapper):
             pressure_score = context.get("pass_protection_edge", 55.0)
             run_edge = context.get("run_game_edge", 55.0)
 
+
+        if context.get("skill_coverage_v2"):
+            skill_payload = dict(context["skill_coverage_v2"])
+            skill_payload.setdefault("quarterback_accuracy_score", qb_score)
+            skill_payload.setdefault("pass_protection_score", pressure_score)
+            skill = calculate_skill_coverage_matchup(SkillCoverageMatchupInput(**skill_payload))
+            skill_score = skill.final_skill_coverage_score
+            skill_explosive = skill.explosive_pass_projection
+            red_zone_skill = skill.red_zone_skill_score
+        else:
+            skill_score = context.get("skill_coverage_edge", 55.0)
+            skill_explosive = explosive_score
+            red_zone_skill = context.get("red_zone_skill", 55.0)
+
         return {
             "qb_edge": qb_score,
             "ol_dl_edge": trench_score,
-            "explosive_play_edge": (explosive_score * 0.70 + run_edge * 0.30),
+            "explosive_play_edge": (skill_explosive * 0.50 + explosive_score * 0.30 + run_edge * 0.20),
             "defensive_efficiency_edge": context.get("defensive_efficiency_edge", 55.0),
             "injury_edge": context.get("injury_edge", 55.0),
             "coaching_edge": context.get("coaching_edge", 55.0),
@@ -51,4 +67,6 @@ class NflFeatureMapper(FeatureMapper):
             "qb_volatility": variance_penalty,
             "pass_protection_edge": pressure_score,
             "run_game_edge": run_edge,
+            "skill_coverage_edge": skill_score,
+            "red_zone_skill": red_zone_skill,
         }
