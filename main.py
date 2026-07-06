@@ -11,6 +11,7 @@ from luca.api.mlb_defense_routes import router as mlb_defense_router
 from luca.api.mlb_environment_routes import router as mlb_environment_router
 from luca.api.mlb_market_routes import router as mlb_market_router
 from luca.api.validation_routes import router as validation_router
+from luca.api.nfl_quarterback_routes import router as nfl_quarterback_router
 
 from luca.calibration.engine import build_calibration_summary
 from luca.config.settings import get_settings
