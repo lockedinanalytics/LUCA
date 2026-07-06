@@ -7,6 +7,8 @@ from luca.features.mappers.base import FeatureMapper
 from luca.intelligence.mlb.bsi import BullpenUsageInput, calculate_bsi
 from luca.intelligence.mlb.bullpen.engine import calculate_bullpen_intelligence
 from luca.intelligence.mlb.bullpen.models import BullpenIntelligenceInput
+from luca.intelligence.mlb.defense.engine import calculate_defensive_intelligence
+from luca.intelligence.mlb.defense.models import DefensiveIntelligenceInput
 from luca.intelligence.mlb.lineup_quality import LineupQualityInput, calculate_lineup_quality
 from luca.intelligence.mlb.offense.models import RunCreationV2Input
 from luca.intelligence.mlb.offense.rcp_v2 import calculate_rcp_v2
@@ -31,6 +33,14 @@ class MlbFeatureMapper(FeatureMapper):
             bsi_score = bsi.final_bsi
         else:
             bsi_score = calculate_bsi(BullpenUsageInput(**context.get("bullpen", {}))).final_bsi
+
+        if context.get("defense_v2"):
+            defense = calculate_defensive_intelligence(DefensiveIntelligenceInput(**context["defense_v2"]))
+            cam_score = defense.cam_score
+            defense_support = defense.defensive_run_prevention_score
+        else:
+            cam_score = context.get("cam", 55.0)
+            defense_support = context.get("defense_support", 55.0)
 
         if context.get("offense_v2"):
             offense_payload = dict(context["offense_v2"])
@@ -65,8 +75,9 @@ class MlbFeatureMapper(FeatureMapper):
             "bsi": bsi_score,
             "rcp": rcp_score,
             "smi": smi.smi_score,
-            "cam": context.get("cam", 55.0),
+            "cam": cam_score,
             "wrm": max(0, min(100, 50 + (wrm - 1.0) * 100)),
             "umpire": context.get("umpire", 50.0),
             "market_edge": 55.0 if markets else 45.0,
+            "defense_support": defense_support,
         }
