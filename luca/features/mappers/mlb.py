@@ -9,6 +9,8 @@ from luca.intelligence.mlb.bullpen.engine import calculate_bullpen_intelligence
 from luca.intelligence.mlb.bullpen.models import BullpenIntelligenceInput
 from luca.intelligence.mlb.defense.engine import calculate_defensive_intelligence
 from luca.intelligence.mlb.defense.models import DefensiveIntelligenceInput
+from luca.intelligence.mlb.environment.engine import calculate_environment_context
+from luca.intelligence.mlb.environment.models import EnvironmentContextInput
 from luca.intelligence.mlb.lineup_quality import LineupQualityInput, calculate_lineup_quality
 from luca.intelligence.mlb.offense.models import RunCreationV2Input
 from luca.intelligence.mlb.offense.rcp_v2 import calculate_rcp_v2
@@ -21,6 +23,18 @@ from luca.intelligence.market.smi import MarketMovementInput, calculate_smi
 class MlbFeatureMapper(FeatureMapper):
     def build_modules(self, game: TeamGame, markets: list[MarketLine], context: dict[str, Any] | None = None) -> dict[str, float]:
         context = context or {}
+
+        if context.get("environment_context_v2"):
+            env = calculate_environment_context(EnvironmentContextInput(**context["environment_context_v2"]))
+            wrm_value = env.explainability.get("wind_run_multiplier", 1.0)
+            weather_total_adjustment = env.explainability.get("weather_total_adjustment", 0.0)
+            umpire_score = env.umpire_score
+            environment_score = env.final_environment_score
+        else:
+            wrm_value = context.get("wind_run_multiplier", 1.0)
+            weather_total_adjustment = context.get("weather_total_adjustment", 0.0)
+            umpire_score = context.get("umpire", 50.0)
+            environment_score = context.get("environment", 50.0)
 
         if context.get("starting_pitcher_v2"):
             sp = calculate_starting_pitcher_intelligence(StartingPitcherIntelligenceInput(**context["starting_pitcher_v2"]))
@@ -46,7 +60,7 @@ class MlbFeatureMapper(FeatureMapper):
             offense_payload = dict(context["offense_v2"])
             offense_payload.setdefault("opposing_starting_pitcher_score", sp_score)
             offense_payload.setdefault("opposing_bullpen_score", bsi_score)
-            offense_payload.setdefault("weather_total_adjustment", context.get("weather_total_adjustment", 0.0))
+            offense_payload.setdefault("weather_total_adjustment", weather_total_adjustment)
             offense_payload.setdefault("park_factor", context.get("park_factor", 1.0))
             rcp_score = calculate_rcp_v2(RunCreationV2Input(**offense_payload)).final_rcp_score
         else:
@@ -55,7 +69,7 @@ class MlbFeatureMapper(FeatureMapper):
                 top_order_score=lineup.run_creation_score,
                 bottom_order_score=lineup.depth_score,
                 pitcher_matchup_score=sp_score,
-                weather_total_adjustment=context.get("weather_total_adjustment", 0.0),
+                weather_total_adjustment=weather_total_adjustment,
                 park_factor=context.get("park_factor", 1.0),
                 lineup_count=context.get("lineup", {}).get("lineup_count", 9),
             )).rcp_score
@@ -68,16 +82,15 @@ class MlbFeatureMapper(FeatureMapper):
             sharp_percent=context.get("sharp_percent"),
         ))
 
-        wrm = context.get("wind_run_multiplier", 1.0)
-
         return {
             "sp": sp_score,
             "bsi": bsi_score,
             "rcp": rcp_score,
             "smi": smi.smi_score,
             "cam": cam_score,
-            "wrm": max(0, min(100, 50 + (wrm - 1.0) * 100)),
-            "umpire": context.get("umpire", 50.0),
+            "wrm": max(0, min(100, 50 + (wrm_value - 1.0) * 100)),
+            "umpire": umpire_score,
             "market_edge": 55.0 if markets else 45.0,
             "defense_support": defense_support,
+            "environment": environment_score,
         }
