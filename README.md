@@ -1,20 +1,19 @@
-# LUCA Universal Decision Operating System — Repo Conversion v1
+# LUCA Universal Decision Operating System — Repo Conversion v2
 
-This is the first transferable repository scaffold for LUCA.
+This version upgrades the LUCA scaffold from interface-only to formula-ready.
 
-It converts the architecture built in chat into a Python-ready structure that can be copied to GitHub, moved by USB, or deployed to Railway after provider integrations are added.
+## Added in v2
+- Universal feature registry
+- Universal analytics engine formulas
+- Objective engine thresholds
+- Governance gates
+- Sport formula configuration
+- Publication formatter
+- Expanded FastAPI routes
+- Basic tests
 
-## Current status
-
-Working skeleton:
-- Universal core models
-- Sport engine interfaces
-- Objective engine helpers
-- Governance shell
-- Ledger shell
-- Calibration shell
-- FastAPI entrypoint
-
-## Next build pass
-
-Add real provider integrations, scoring formulas, validation tests, and sport-specific implementations.
+## Run locally
+```bash
+pip install -r requirements.txt
+uvicorn main:app --reload
+```

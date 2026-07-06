@@ -1,17 +1,14 @@
 from __future__ import annotations
-
 from typing import List
-
 from luca.core.engine import SportEngine
+from luca.core.math_utils import weighted_average
 from luca.core.models import LucaRunResult, MarketLine, Sport, TeamGame
-
+from luca.sports.formulas import SPORT_WEIGHTS
 
 class MmaEngine(SportEngine):
     sport = Sport.MMA
 
     def evaluate_games(self, games: List[TeamGame], markets: List[MarketLine]) -> LucaRunResult:
-        # Placeholder production contract.
-        # Next pass will add sport-specific scoring formulas and provider mappings.
         return LucaRunResult(
             sport=self.sport,
             league="MMA",
@@ -19,7 +16,11 @@ class MmaEngine(SportEngine):
             slate_size=len(games),
             games_evaluated=len(games),
             data_completeness=0.0,
-            run_status="stub",
+            run_status="formula_ready_stub",
             evaluations=[],
             recommendations=[],
         )
+
+    def score_from_modules(self, modules: dict[str, float]) -> float:
+        weights = SPORT_WEIGHTS.get(self.sport.value, {})
+        return weighted_average(modules, weights)

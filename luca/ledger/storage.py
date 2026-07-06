@@ -1,11 +1,8 @@
 from __future__ import annotations
-
 import json
 from pathlib import Path
 from typing import List
-
 from luca.ledger.models import LedgerDecision
-
 
 class JsonLedgerStore:
     def __init__(self, path: str = "luca_ledger.jsonl"):
