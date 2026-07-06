@@ -8,6 +8,7 @@ from luca.api.mlb_pitching_routes import router as mlb_pitching_router
 from luca.api.mlb_bullpen_routes import router as mlb_bullpen_router
 from luca.api.mlb_offense_routes import router as mlb_offense_router
 from luca.api.mlb_defense_routes import router as mlb_defense_router
+from luca.api.mlb_environment_routes import router as mlb_environment_router
 
 from luca.calibration.engine import build_calibration_summary
 from luca.config.settings import get_settings
