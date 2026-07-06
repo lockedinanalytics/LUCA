@@ -28,7 +28,6 @@ from luca.diagnostics.health import build_system_health
 from luca.ledger.storage import JsonLedgerStore
 from luca.providers.factory import get_market_provider, get_schedule_provider
 from luca.providers.odds.the_odds_api.provider import TheOddsApiMarketProvider
-from luca.providers.static.provider import StaticMarketProvider, StaticScheduleProvider
 from luca.publication.formatter import run_summary
 from luca.run.orchestrator import run_luca_for_sport
 from luca.simulation.engine import SimulationRequest, simulate_game
@@ -36,6 +35,30 @@ from luca.workflows.pipeline import LucaWorkflowPipeline, PipelineContext
 
 settings = get_settings()
 app = FastAPI(title=settings.app_name, version=settings.model_version)
+
+app.include_router(provider_router)
+app.include_router(intelligence_router)
+app.include_router(simulation_router)
+app.include_router(mlb_intelligence_router)
+app.include_router(decision_router)
+
+app.include_router(mlb_pitching_router)
+app.include_router(mlb_bullpen_router)
+app.include_router(mlb_offense_router)
+app.include_router(mlb_defense_router)
+app.include_router(mlb_environment_router)
+app.include_router(mlb_market_router)
+
+app.include_router(validation_router)
+
+app.include_router(nfl_quarterback_router)
+app.include_router(nfl_trench_router)
+app.include_router(nfl_skill_coverage_router)
+app.include_router(nfl_context_router)
+app.include_router(nfl_decision_router)
+app.include_router(nfl_validation_router)
+
+app.include_router(ncaaf_foundation_router)
 
 @app.get("/")
 async def root():
