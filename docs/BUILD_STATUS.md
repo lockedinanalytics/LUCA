@@ -1,20 +1,19 @@
-# LUCA Build Status v6
+# LUCA Build Status v7
 
 ## Added
-- Results grading shell
-- Provider freshness model
-- Unit authority module
-- Audit report builder
-- API router separation
-- `/freshness/sample`
-- `/results/grade`
-- Audit mode on `/run-luca/{sport}`
+- Team scoring projection helpers
+- Market evaluator
+- Market-specific grading shell
+- JSON public card model
+- Odds provider namespace
+- Injury provider namespace
+- `/card/{sport}` endpoint
 
 ## Status
-LUCA now has a cleaner API layer, basic grading, provider freshness checks, and unit authority as a standalone module.
+LUCA now supports clearer market evaluation, public-card JSON output, and expanded provider interfaces.
 
 ## Next
-- Add real provider adapters.
-- Connect simulation outputs directly into sport evaluations.
-- Add result persistence updates after grading.
-- Add full market-specific grading for spread, total, props, and contests.
+- Wire market evaluator directly into sport engines.
+- Add full grade persistence update.
+- Add provider-backed MLB schedule implementation.
+- Add sport-specific projection baselines.

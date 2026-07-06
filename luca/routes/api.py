@@ -14,6 +14,7 @@ from luca.ledger.storage import JsonLedgerStore
 from luca.providers.freshness.models import freshness_report
 from luca.providers.static.provider import StaticMarketProvider, StaticScheduleProvider
 from luca.publication.formatter import run_summary
+from luca.publication.cards.json_card import build_public_card
 from luca.results.grader import FinalResult
 from luca.results.service import grade_game_decisions
 from luca.run.orchestrator import run_luca_for_sport
@@ -98,3 +99,15 @@ async def survivor_sample():
         SurvivorTeamOption(team="MIN", win_probability=0.70, future_value=62, ownership_projection=12, scarcity_score=82, schedule_path_value=68, risk_stability=70),
     ]
     return [row.model_dump() for row in rank_survivor_options(options)]
+
+
+@router.get("/card/{sport}")
+async def public_card(sport: Sport, date: str = Query(...), league: str | None = None):
+    result = run_luca_for_sport(
+        sport=sport,
+        league=league or sport.value.upper(),
+        date=date,
+        schedule_provider=StaticScheduleProvider(),
+        market_provider=StaticMarketProvider(),
+    )
+    return build_public_card(result).model_dump()

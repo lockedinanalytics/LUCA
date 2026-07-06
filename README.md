@@ -52,3 +52,12 @@ uvicorn main:app --reload
 - API router separation
 - `/results/grade`
 - `/freshness/sample`
+
+
+## v7 additions
+- Market evaluator
+- Public JSON card model
+- Team scoring projection helpers
+- Market-specific grading shell
+- Odds and injury provider namespaces
+- `/card/{sport}`
