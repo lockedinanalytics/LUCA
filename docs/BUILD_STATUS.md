@@ -1,26 +1,19 @@
-# LUCA Build Status
+# LUCA Build Status v3
 
-## Complete as specification
-- Universal Core
-- Sport engine inventory
-- Objective engine inventory
-- Universal ledger design
-- Calibration design
-- Governance design
+## Added
+- Provider adapter interfaces
+- Static schedule/market providers for smoke tests
+- Universal run orchestrator
+- /run-luca/{sport} endpoint
+- Formula-ready sport engines that return evaluations/pass lists
+- Circa Survivor scoring engine
+- /survivor/sample endpoint
 
-## Complete as code scaffold
-- Core models
-- Sport engine interfaces
-- Objective helpers
-- Governance helper
-- JSON ledger
-- Calibration summary
-- FastAPI app
+## Status
+This version can run a LUCA sample for every supported sport without external data providers.
 
 ## Next
-- Add feature library files
-- Add MLB production formulas
-- Add NFL production formulas
-- Add Circa Survivor engine
-- Add provider adapters
-- Add tests
+- Replace static providers with real providers.
+- Add database ledger persistence.
+- Add MLB/NFL provider mapping.
+- Add route-level ledger write support.

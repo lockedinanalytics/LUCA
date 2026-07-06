@@ -17,3 +17,9 @@ This version upgrades the LUCA scaffold from interface-only to formula-ready.
 pip install -r requirements.txt
 uvicorn main:app --reload
 ```
+
+## v3 additions
+- Run orchestrator
+- Static providers
+- /run-luca/{sport}
+- Circa Survivor scoring
