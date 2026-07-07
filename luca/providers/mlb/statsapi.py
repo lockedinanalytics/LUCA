@@ -15,7 +15,7 @@ class MlbStatsApiScheduleProvider(ScheduleProvider):
         if sport != Sport.MLB:
             return []
 
-        payload = self.client.schedule(date)
+        payload = self.client.probable_pitchers(date)
         games: list[TeamGame] = []
         for day in payload.get("dates", []):
             for game in day.get("games", []):
