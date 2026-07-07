@@ -3,16 +3,13 @@ from __future__ import annotations
 from datetime import date
 from typing import Any
 
-from luca.intelligence.mlb.starting_pitcher import (
-    StartingPitcherInput,
-)
+from luca.intelligence.mlb.starting_pitcher import StartingPitcherInput
 from luca.providers.mlb.player_stats import MlbPlayerStatsProvider
 
 
 class MlbPitcherAdapter:
     """
-    Converts MLB Stats API pitcher data into
-    StartingPitcherInput for LUCA.
+    Converts MLB Stats API pitcher data into StartingPitcherInput for LUCA.
     """
 
     def __init__(self):
@@ -49,37 +46,16 @@ class MlbPitcherAdapter:
         walks = self._to_float(stat.get("baseOnBalls"))
         batters = self._to_float(stat.get("battersFaced"))
 
-      return StartingPitcherInput(
-    xera=self._to_float(stat.get("era")),
-    fip=self._estimate_fip(stat),
-    strikeout_rate=self._percent(strikeouts, batters),
-    walk_rate=self._percent(walks, batters),
-    hard_hit_rate=None,
-    barrel_rate=None,
-    recent_pitch_count=None,
-    days_rest=None,
-) 
-
-def _estimate_fip(self, stat: dict[str, Any]) -> float | None:
-    innings = self._to_float(stat.get("inningsPitched"))
-    home_runs = self._to_float(stat.get("homeRuns"))
-    walks = self._to_float(stat.get("baseOnBalls"))
-    hit_by_pitch = self._to_float(stat.get("hitBatsmen"))
-    strikeouts = self._to_float(stat.get("strikeOuts"))
-
-    if innings in (None, 0):
-        return None
-
-    return round(
-        (
-            (13 * (home_runs or 0))
-            + (3 * ((walks or 0) + (hit_by_pitch or 0)))
-            - (2 * (strikeouts or 0))
+        return StartingPitcherInput(
+            xera=self._to_float(stat.get("era")),
+            fip=self._estimate_fip(stat),
+            strikeout_rate=self._percent(strikeouts, batters),
+            walk_rate=self._percent(walks, batters),
+            hard_hit_rate=None,
+            barrel_rate=None,
+            recent_pitch_count=None,
+            days_rest=None,
         )
-        / innings
-        + 3.1,
-        2,
-    )
 
     def _extract_pitching_stat(self, payload: dict[str, Any]) -> dict[str, Any]:
         people = payload.get("people", [])
@@ -101,6 +77,27 @@ def _estimate_fip(self, stat: dict[str, Any]) -> float | None:
                 return stat
 
         return {}
+
+    def _estimate_fip(self, stat: dict[str, Any]) -> float | None:
+        innings = self._to_float(stat.get("inningsPitched"))
+        home_runs = self._to_float(stat.get("homeRuns"))
+        walks = self._to_float(stat.get("baseOnBalls"))
+        hit_by_pitch = self._to_float(stat.get("hitBatsmen"))
+        strikeouts = self._to_float(stat.get("strikeOuts"))
+
+        if innings in (None, 0):
+            return None
+
+        return round(
+            (
+                (13 * (home_runs or 0))
+                + (3 * ((walks or 0) + (hit_by_pitch or 0)))
+                - (2 * (strikeouts or 0))
+            )
+            / innings
+            + 3.1,
+            2,
+        )
 
     @staticmethod
     def _to_float(value: Any) -> float | None:
