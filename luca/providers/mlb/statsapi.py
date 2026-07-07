@@ -22,8 +22,14 @@ class MlbStatsApiScheduleProvider(ScheduleProvider):
                 teams = game.get("teams", {})
                 away = teams.get("away", {}).get("team", {}).get("name", "Away")
                 home = teams.get("home", {}).get("team", {}).get("name", "Home")
-                away_probable = teams.get("away", {}).get("probablePitcher", {}).get("fullName")
-                home_probable = teams.get("home", {}).get("probablePitcher", {}).get("fullName")
+                away_probable_obj = teams.get("away", {}).get("probablePitcher", {}) or {}
+                home_probable_obj = teams.get("home", {}).get("probablePitcher", {}) or {}
+
+                away_probable = away_probable_obj.get("fullName")
+                home_probable = home_probable_obj.get("fullName")
+
+                away_probable_id = away_probable_obj.get("id")
+                home_probable_id = home_probable_obj.get("id")
                 games.append(
                     TeamGame(
                         game_id=str(game.get("gamePk")),
@@ -34,10 +40,12 @@ class MlbStatsApiScheduleProvider(ScheduleProvider):
                         home_team=home,
                         start_time=game.get("gameDate"),
                         venue=game.get("venue", {}).get("name"),
-                        metadata={
+                       metadata={
                             "status": game.get("status", {}),
                             "away_probable_pitcher": away_probable,
                             "home_probable_pitcher": home_probable,
+                            "away_probable_pitcher_id": away_probable_id,
+                            "home_probable_pitcher_id": home_probable_id,
                         },
                     )
                 )
