@@ -30,3 +30,12 @@ class MlbStatsApiClient:
 
     def probable_pitchers(self, date: str) -> dict:
         return self._get("/schedule", {"sportId": 1, "date": date, "hydrate": "probablePitcher"})
+
+    def player_stats(self, player_id: str | int, season: str | int | None = None) -> dict:
+    params = {
+        "hydrate": "stats(group=[pitching],type=[season])"
+    }
+    if season is not None:
+        params["season"] = str(season)
+
+    return self._get(f"/people/{player_id}", params)
