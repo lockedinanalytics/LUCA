@@ -18,7 +18,7 @@ from luca.api.nfl_context_routes import router as nfl_context_router
 from luca.api.nfl_decision_routes import router as nfl_decision_router
 from luca.api.nfl_validation_routes import router as nfl_validation_router
 from luca.api.ncaaf_foundation_routes import router as ncaaf_foundation_router
-
+from luca.providers.mlb.player_stats import MlbPlayerStatsProvider
 from luca.calibration.engine import build_calibration_summary
 from luca.config.settings import get_settings
 from luca.core.models import Sport
@@ -112,6 +112,11 @@ async def run_luca(
         get_market_provider(market_provider),
     )
     return run_summary(result) if public else result
+
+@app.get("/debug/pitcher/{pitcher_id}")
+async def debug_pitcher(pitcher_id: int):
+    provider = MlbPlayerStatsProvider()
+    return provider.get_pitcher_stats(pitcher_id)
 
 @app.get("/workflow/run/{sport}")
 async def workflow_run(
