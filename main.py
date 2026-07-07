@@ -33,6 +33,7 @@ from luca.run.orchestrator import run_luca_for_sport
 from luca.simulation.engine import SimulationRequest, simulate_game
 from luca.workflows.pipeline import LucaWorkflowPipeline, PipelineContext
 from luca.providers.mlb.player_stats import MlbPlayerStatsProvider
+from luca.intelligence.mlb.adapters import MlbPitcherAdapter
 
 settings = get_settings()
 app = FastAPI(title=settings.app_name, version=settings.model_version)
@@ -72,6 +73,11 @@ async def health():
 @app.get("/providers/odds/status")
 async def odds_status():
     return TheOddsApiMarketProvider().status().model_dump()
+
+@app.get("/debug/pitcher-input/{pitcher_id}")
+async def debug_pitcher_input(pitcher_id: int):
+    adapter = MlbPitcherAdapter()
+    return adapter.build(pitcher_id)
 
 @app.get("/run-luca/{sport}")
 async def run_luca(
