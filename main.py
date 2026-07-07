@@ -32,6 +32,7 @@ from luca.publication.formatter import run_summary
 from luca.run.orchestrator import run_luca_for_sport
 from luca.simulation.engine import SimulationRequest, simulate_game
 from luca.workflows.pipeline import LucaWorkflowPipeline, PipelineContext
+from luca.providers.mlb.player_stats import MlbPlayerStatsProvider
 
 settings = get_settings()
 app = FastAPI(title=settings.app_name, version=settings.model_version)
@@ -125,6 +126,11 @@ async def workflow_run(
     pipe = LucaWorkflowPipeline(get_schedule_provider(), get_market_provider(), repo)
     result = pipe.run(PipelineContext(sport=sport, league=league or sport.value.upper(), date=date, write_ledger=write_ledger))
     return run_summary(result) if public else result
+
+@app.get("/debug/pitcher/{pitcher_id}")
+async def debug_pitcher(pitcher_id: int):
+    provider = MlbPlayerStatsProvider()
+    return provider.get_pitcher_stats(pitcher_id)
 
 @app.get("/calibration")
 async def calibration(sqlite: bool = True):
