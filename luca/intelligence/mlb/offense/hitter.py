@@ -3,7 +3,22 @@ from __future__ import annotations
 from luca.intelligence.mlb.offense.models import HitterInput, HitterQualityOutput
 
 
+HITTER_ENGINE_VERSION = "hitter_governance_diagnostic_cleanup"
+
+
+def _clamp(value: float, low: float = 0.0, high: float = 100.0) -> float:
+    return max(low, min(high, float(value)))
+
+
 def score_hitter(row: HitterInput) -> HitterQualityOutput:
+    """
+    Score individual hitter quality for upstream offensive intelligence.
+
+    Governance migration note:
+    Hitter scoring is diagnostic only. It does not select plays, certify
+    Presidential eligibility, apply Governance penalties, rank wagers, or
+    assign units.
+    """
     warnings: list[str] = []
 
     on_base = (
@@ -50,20 +65,22 @@ def score_hitter(row: HitterInput) -> HitterQualityOutput:
         + row.baserunning_score * 0.06
     ) * spot_multiplier - row.injury_penalty
 
-    if row.injury_penalty >= 5:
+    if row.injury_penalty >= 5.0:
         warnings.append(f"{row.name}: injury/availability penalty applied.")
-    if row.strikeout_avoidance_score < 42:
+
+    if row.strikeout_avoidance_score < 42.0:
         warnings.append(f"{row.name}: elevated strikeout risk.")
-    if row.platoon_score < 42:
+
+    if row.platoon_score < 42.0:
         warnings.append(f"{row.name}: platoon disadvantage.")
 
     return HitterQualityOutput(
         name=row.name,
         lineup_spot=row.lineup_spot,
-        on_base_score=round(max(0, min(100, on_base)), 2),
-        damage_score=round(max(0, min(100, damage)), 2),
-        discipline_score=round(max(0, min(100, discipline)), 2),
-        matchup_score=round(max(0, min(100, matchup)), 2),
-        final_hitter_score=round(max(0, min(100, final)), 2),
+        on_base_score=round(_clamp(on_base), 2),
+        damage_score=round(_clamp(damage), 2),
+        discipline_score=round(_clamp(discipline), 2),
+        matchup_score=round(_clamp(matchup), 2),
+        final_hitter_score=round(_clamp(final), 2),
         warnings=warnings,
     )
