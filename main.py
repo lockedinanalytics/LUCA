@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, HTTPException, Query
 from luca.api.provider_routes import router as provider_router
 from luca.api.intelligence_routes import router as intelligence_router
 from luca.api.simulation_routes import router as simulation_router
@@ -32,7 +32,6 @@ from luca.publication.formatter import run_summary
 from luca.run.orchestrator import run_luca_for_sport
 from luca.simulation.engine import SimulationRequest, simulate_game
 from luca.workflows.pipeline import LucaWorkflowPipeline, PipelineContext
-from luca.providers.mlb.player_stats import MlbPlayerStatsProvider
 from luca.intelligence.mlb.adapters import MlbPitcherAdapter
 
 settings = get_settings()
@@ -99,25 +98,20 @@ async def run_luca(
         return run_summary(result) if public else result
 
     except Exception as exc:
-        return {
-            "status": "error",
-            "route": "/run-luca/{sport}",
-            "sport": sport.value,
-            "date": date,
-            "league": league or sport.value.upper(),
-            "schedule_provider": schedule_provider,
-            "market_provider": market_provider,
-            "error_type": type(exc).__name__,
-            "error": str(exc),
-        }
-    result = run_luca_for_sport(
-        sport,
-        league or sport.value.upper(),
-        date,
-        get_schedule_provider(schedule_provider),
-        get_market_provider(market_provider),
-    )
-    return run_summary(result) if public else result
+        raise HTTPException(
+            status_code=502,
+            detail={
+                "status": "error",
+                "route": "/run-luca/{sport}",
+                "sport": sport.value,
+                "date": date,
+                "league": league or sport.value.upper(),
+                "schedule_provider": schedule_provider,
+                "market_provider": market_provider,
+                "error_type": type(exc).__name__,
+                "error": str(exc),
+            },
+        ) from exc
 
 @app.get("/debug/pitcher/{pitcher_id}")
 async def debug_pitcher(pitcher_id: int):
@@ -137,11 +131,6 @@ async def workflow_run(
     pipe = LucaWorkflowPipeline(get_schedule_provider(), get_market_provider(), repo)
     result = pipe.run(PipelineContext(sport=sport, league=league or sport.value.upper(), date=date, write_ledger=write_ledger))
     return run_summary(result) if public else result
-
-@app.get("/debug/pitcher/{pitcher_id}")
-async def debug_pitcher(pitcher_id: int):
-    provider = MlbPlayerStatsProvider()
-    return provider.get_pitcher_stats(pitcher_id)
 
 @app.get("/calibration")
 async def calibration(sqlite: bool = True):
