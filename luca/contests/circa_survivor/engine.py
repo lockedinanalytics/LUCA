@@ -1,18 +1,18 @@
 from __future__ import annotations
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from luca.core.math_utils import clamp
 
 
 class SurvivorTeamOption(BaseModel):
     team: str
-    win_probability: float
-    future_value: float
-    ownership_projection: float
-    scarcity_score: float
-    schedule_path_value: float
-    risk_stability: float
+    win_probability: float = Field(ge=0.0, le=1.0)
+    future_value: float = Field(ge=0.0, le=100.0)
+    ownership_projection: float = Field(ge=0.0, le=100.0)
+    scarcity_score: float = Field(ge=0.0, le=100.0)
+    schedule_path_value: float = Field(ge=0.0, le=100.0)
+    risk_stability: float = Field(ge=0.0, le=100.0)
 
 
 class SurvivorPickResult(BaseModel):
