@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 from pydantic import BaseModel, Field
 
 
@@ -13,5 +13,7 @@ class PromotionRecord(BaseModel):
     readiness_score: float
     failed_gates: list[str] = Field(default_factory=list)
     approved_by: str = "LUCA Governance"
-    created_at: str = Field(default_factory=lambda: datetime.utcnow().isoformat())
+    created_at: str = Field(
+        default_factory=lambda: datetime.now(timezone.utc).isoformat()
+    )
     notes: list[str] = Field(default_factory=list)
