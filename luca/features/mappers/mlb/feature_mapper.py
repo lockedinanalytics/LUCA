@@ -2,61 +2,101 @@ from __future__ import annotations
 
 from typing import Any
 
-from luca.intelligence.mlb.adapters import MlbPitcherAdapter
+from luca.core.models import MarketLine, TeamGame
+from luca.features.mappers.base import FeatureMapper
 from luca.intelligence.mlb.bsi import BullpenUsageInput, calculate_bsi
+from luca.intelligence.mlb.bullpen.engine import calculate_bullpen_intelligence
+from luca.intelligence.mlb.bullpen.models import BullpenIntelligenceInput
+from luca.intelligence.mlb.defense.engine import calculate_defensive_intelligence
+from luca.intelligence.mlb.defense.models import DefensiveIntelligenceInput
+from luca.intelligence.mlb.environment.engine import calculate_environment_context
+from luca.intelligence.mlb.environment.models import EnvironmentContextInput
+from luca.intelligence.mlb.lineup_quality import LineupQualityInput, calculate_lineup_quality
+from luca.intelligence.mlb.offense.models import RunCreationV2Input
+from luca.intelligence.mlb.offense.rcp_v2 import calculate_rcp_v2
+from luca.intelligence.mlb.pitching.engine import calculate_starting_pitcher_intelligence
+from luca.intelligence.mlb.pitching.models import StartingPitcherIntelligenceInput
 from luca.intelligence.mlb.rcp import RunCreationInput, calculate_rcp
-from luca.intelligence.mlb.starting_pitcher import calculate_starting_pitcher_score
+from luca.intelligence.market.smi import MarketMovementInput, calculate_smi
+from luca.intelligence.market.v2.engine import calculate_smi_v2
+from luca.intelligence.market.v2.models import SmartMoneyV2Input
 
 
-class MlbFeatureMapper:
-    """
-    Builds MLB module scores matching SPORT_WEIGHTS["mlb"].
-    """
+class MlbFeatureMapper(FeatureMapper):
+    def build_modules(self, game: TeamGame, markets: list[MarketLine], context: dict[str, Any] | None = None) -> dict[str, float]:
+        context = context or {}
 
-    def __init__(self):
-        self.pitcher_adapter = MlbPitcherAdapter()
+        if context.get("environment_context_v2"):
+            env = calculate_environment_context(EnvironmentContextInput(**context["environment_context_v2"]))
+            wrm_value = env.explainability.get("wind_run_multiplier", 1.0)
+            weather_total_adjustment = env.explainability.get("weather_total_adjustment", 0.0)
+            umpire_score = env.umpire_score
+            environment_score = env.final_environment_score
+        else:
+            wrm_value = context.get("wind_run_multiplier", 1.0)
+            weather_total_adjustment = context.get("weather_total_adjustment", 0.0)
+            umpire_score = context.get("umpire", 50.0)
+            environment_score = context.get("environment", 50.0)
 
-    def build_modules(
-        self,
-        game: Any,
-        markets: Any | None = None,
-        **kwargs: Any,
-    ) -> dict[str, float]:
-        home_sp_input = self.pitcher_adapter.build_for_home_pitcher(game)
-        away_sp_input = self.pitcher_adapter.build_for_away_pitcher(game)
+        if context.get("starting_pitcher_v2"):
+            sp = calculate_starting_pitcher_intelligence(StartingPitcherIntelligenceInput(**context["starting_pitcher_v2"]))
+            sp_score = sp.final_sp_score
+        else:
+            sp_score = context.get("sp", 55.0)
 
-        home_sp = calculate_starting_pitcher_score(home_sp_input)
-        away_sp = calculate_starting_pitcher_score(away_sp_input)
+        if context.get("bullpen_v2"):
+            bsi = calculate_bullpen_intelligence(BullpenIntelligenceInput(**context["bullpen_v2"]))
+            bsi_score = bsi.final_bsi
+        else:
+            bsi_score = calculate_bsi(BullpenUsageInput(**context.get("bullpen", {}))).final_bsi
 
-        sp_edge = self._edge_score(home_sp.final_sp_score, away_sp.final_sp_score)
+        if context.get("defense_v2"):
+            defense = calculate_defensive_intelligence(DefensiveIntelligenceInput(**context["defense_v2"]))
+            cam_score = defense.cam_score
+            defense_support = defense.defensive_run_prevention_score
+        else:
+            cam_score = context.get("cam", 55.0)
+            defense_support = context.get("defense_support", 55.0)
 
-        bsi = calculate_bsi(BullpenUsageInput())
-        rcp = calculate_rcp(RunCreationInput())
-        market_score = self._market_score(markets)
+        if context.get("offense_v2"):
+            offense_payload = dict(context["offense_v2"])
+            offense_payload.setdefault("opposing_starting_pitcher_score", sp_score)
+            offense_payload.setdefault("opposing_bullpen_score", bsi_score)
+            offense_payload.setdefault("weather_total_adjustment", weather_total_adjustment)
+            offense_payload.setdefault("park_factor", context.get("park_factor", 1.0))
+            rcp_score = calculate_rcp_v2(RunCreationV2Input(**offense_payload)).final_rcp_score
+        else:
+            lineup = calculate_lineup_quality(LineupQualityInput(**context.get("lineup", {})))
+            rcp_score = calculate_rcp(RunCreationInput(
+                top_order_score=lineup.run_creation_score,
+                bottom_order_score=lineup.depth_score,
+                pitcher_matchup_score=sp_score,
+                weather_total_adjustment=weather_total_adjustment,
+                park_factor=context.get("park_factor", 1.0),
+                lineup_count=context.get("lineup", {}).get("lineup_count", 9),
+            )).rcp_score
+
+        first_market = markets[0] if markets else None
+        if context.get("market_v2"):
+            smi_score = calculate_smi_v2(SmartMoneyV2Input(**context["market_v2"])).final_smi_score
+        else:
+            smi_score = calculate_smi(MarketMovementInput(
+                opening_odds=first_market.open_odds if first_market else None,
+                current_odds=first_market.current_odds if first_market else None,
+                public_percent=context.get("public_percent"),
+                sharp_percent=context.get("sharp_percent"),
+            )).smi_score
 
         return {
-            "sp": sp_edge,
-            "bsi": bsi.final_bsi,
-            "rcp": rcp.rcp_score,
-            "smi": market_score,
-            "cam": 50.0,
-            "wrm": 50.0,
-            "umpire": 50.0,
-            "market_edge": market_score,
+            "sp": sp_score,
+            "bsi": bsi_score,
+            "rcp": rcp_score,
+            "smi": smi_score,
+            "cam": cam_score,
+            "wrm": max(0, min(100, 50 + (wrm_value - 1.0) * 100)),
+            "umpire": umpire_score,
+            "market_edge": 55.0 if markets else 45.0,
+            "defense_support": defense_support,
+            "environment": environment_score,
         }
 
-    def build_many(self, games: list[Any]) -> list[dict[str, float]]:
-        return [self.build_modules(game) for game in games]
-
-    def _edge_score(self, home_score: float, away_score: float) -> float:
-        """
-        Converts home-vs-away SP difference into a 0-100 LUCA module score.
-        50 = neutral. Above 50 favors home team. Below 50 favors away team.
-        """
-        return round(max(0.0, min(100.0, 50.0 + (home_score - away_score))), 2)
-
-    def _market_score(self, markets: Any | None) -> float:
-        if not markets:
-            return 50.0
-
-        return 50.0
